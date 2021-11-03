@@ -188,4 +188,25 @@ router.put(
   }
 );
 
+// @route   PUT api/profile/experience/:exp_id
+// @desc    Delete profile experience
+// @access  Private
+router.put("/experience/:exp_id", checkToken, async (req, res) => {
+  const {
+    user: { id },
+    params: { exp_id },
+  } = req;
+  try {
+    const profile = await Profile.findOneAndUpdate(
+      { user: id },
+      { $pull: { experience: { _id: exp_id } } },
+      { new: true }
+    ).exec();
+    res.json(profile);
+  } catch ({ message: msg }) {
+    console.error(msg);
+    return res.status(500).json({ errors: [{ msg }] });
+  }
+});
+
 module.exports = router;
