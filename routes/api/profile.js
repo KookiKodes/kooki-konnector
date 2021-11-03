@@ -1,7 +1,11 @@
 const router = require("express").Router();
-const Profile = require("../../models/Profile");
 const _ = require("lodash");
+const request = require("request");
+const Profile = require("../../models/Profile");
 const User = require("../../models/User");
+
+// env
+require("dotenv").config();
 
 // check middleware
 const { check, validationResult } = require("express-validator");
@@ -274,6 +278,33 @@ router.put("/education/:edu_id", checkToken, async (req, res) => {
       { new: true }
     ).exec();
     res.json(profile);
+  } catch ({ message: msg }) {
+    console.error(msg);
+    return res.status(500).json({ errors: [{ msg }] });
+  }
+});
+
+// @route   GET api/profile/github/repo/:username/:count
+// @desc    Get (n) repos from user's github
+// @access  Public
+router.get("/github/repo/:username/:count", async (req, res) => {
+  try {
+    const { username, count } = req.params;
+
+    const options = {
+      uri: `https://api.github.com/users/${username}/repos?per_page=${count}&sort=created:asc&client_id=${process.env.GITHUB_CLIENT_ID}&client_secret=${process.env.GITHUB_SECRET}`,
+      method: "GET",
+      headers: { "user-agent": "node.js" },
+    };
+
+    request(options, (err, response, body) => {
+      if (err) console.error(err);
+      if (response.statusCode !== 200)
+        return res
+          .status(404)
+          .json({ errors: [{ msg: "No Github profile found" }] });
+      return res.json(JSON.parse(body));
+    });
   } catch ({ message: msg }) {
     console.error(msg);
     return res.status(500).json({ errors: [{ msg }] });

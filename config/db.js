@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const config = require("config");
 const _ = require("lodash");
+require("dotenv").config();
 
-const mongoURI = _.constant(config.get("mongoURI"));
+const mongoURI = _.constant(process.env.MONGO_URI);
 const connectOptions = _.constant({ useNewUrlParser: true });
 
 const connect = _.curry(

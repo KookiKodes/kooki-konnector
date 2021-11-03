@@ -6,9 +6,6 @@ const getNotEmptyCheck = _.curry((check, info) =>
 const getFieldEmailCheck = _.curry((check, info) =>
   check(info.field, info.message).isEmail()
 );
-const getFieldPwordCheck = _.curry((check, info) =>
-  check(info.field, info.message).isLength({ min: 6 })
-);
 
 const getMinLengthCheck = _.curry((check, info) =>
   check(info.field, info.message).isLength({ min: 6 })
