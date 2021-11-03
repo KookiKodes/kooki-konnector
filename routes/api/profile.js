@@ -124,4 +124,68 @@ router.get("/user/:id", async (req, res) => {
   }
 });
 
+// @route   DELETE api/profile
+// @desc    Delete profile, user & posts
+// @access  Private
+router.delete("/", checkToken, async (req, res) => {
+  const { id } = req.user;
+  try {
+    // @todo - remove user's posts
+
+    // Remove profile
+    await Profile.findOneAndRemove({ user: id });
+    await User.findByIdAndRemove(id);
+
+    res.json({ success: true, msg: "Profile sucessfully deleted." });
+  } catch ({ message: msg }) {
+    console.error(msg);
+    return res.status(500).json({ errors: [{ msg }] });
+  }
+});
+
+// put experience checks
+const putExperienceChecks = _.constant([
+  { field: "title", message: "Title is required", notEmpty: true },
+  { field: "company", message: "Company is required", notEmpty: true },
+  { field: "from", message: "From date is required", notEmpty: true },
+]);
+
+// @route   PUT api/profile/experience
+// @desc    Add profile experience
+// @access  Private
+router.put(
+  "/experience",
+  [checkToken, getChecks(check, putExperienceChecks())],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { id } = req.user;
+
+    try {
+      const profile = await Profile.findOneAndUpdate(
+        { user: id },
+        {
+          $push: {
+            experience: {
+              $each: [{ ...req.body }],
+              $position: 0,
+            },
+          },
+        },
+        { new: true }
+      ).exec();
+      if (!profile)
+        return res.status(404).json({ errors: [{ msg: "Profile not found" }] });
+
+      res.json(profile);
+    } catch ({ message: msg }) {
+      console.error(msg);
+      return res.status(500).json({ errors: [{ msg }] });
+    }
+  }
+);
+
 module.exports = router;
