@@ -10,18 +10,19 @@ const { check, validationResult } = require("express-validator");
 
 // checks
 const checks = _.constant([
-  { field: "name", message: "Name is required" },
-  { field: "email", message: "Please include a valid email" },
+  { field: "name", message: "Name is required", notEmpty: true },
+  { field: "email", message: "Please include a valid email", isEmail: true },
   {
     field: "password",
     message: "Please enter a password with 6 or more characters",
+    minLength: true,
   },
 ]);
 const { getChecks } = require("../../utils/userChecks");
 
 const getExpiration = () => (process.env.MODE === "dev" ? 3600000 : 3600);
 
-// @route   GET api/users
+// @route   POST api/users
 // @desc    Test route
 // @access  Public
 router.post("/", getChecks(check, checks()), async (req, res) => {

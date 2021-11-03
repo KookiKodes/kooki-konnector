@@ -30,8 +30,8 @@ router.get("/", checkToken, async (req, res) => {
 // checks
 const { check, validationResult } = require("express-validator");
 const checks = _.constant([
-  { field: "email", message: "Please include a valid email" },
-  { field: "password", message: "Password is required" },
+  { field: "email", message: "Please include a valid email", isEmail: true },
+  { field: "password", message: "Password is required", notEmpty: true },
 ]);
 const { getChecks } = require("../../utils/userChecks");
 

@@ -1,6 +1,6 @@
 const _ = require("lodash");
 
-const getFieldNameCheck = _.curry((check, info) =>
+const getNotEmptyCheck = _.curry((check, info) =>
   check(info.field, info.message).not().isEmpty()
 );
 const getFieldEmailCheck = _.curry((check, info) =>
@@ -10,11 +10,15 @@ const getFieldPwordCheck = _.curry((check, info) =>
   check(info.field, info.message).isLength({ min: 6 })
 );
 
+const getMinLengthCheck = _.curry((check, info) =>
+  check(info.field, info.message).isLength({ min: 6 })
+);
+
 const handleField = (check) =>
   _.cond([
-    [_.matches({ field: "name" }), getFieldNameCheck(check)],
-    [_.matches({ field: "email" }), getFieldEmailCheck(check)],
-    [_.matches({ field: "password" }), getFieldPwordCheck(check)],
+    [_.matches({ notEmpty: true }), getNotEmptyCheck(check)],
+    [_.matches({ isEmail: true }), getFieldEmailCheck(check)],
+    [_.matches({ minLength: true }), getMinLengthCheck(check)],
   ]);
 
 exports.getChecks = (check, fields) => _.map(fields, handleField(check));
