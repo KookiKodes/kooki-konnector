@@ -8,9 +8,7 @@ const config = require("config");
 require("dotenv").config();
 const { check, validationResult } = require("express-validator");
 
-const getExpiration = () => (process.env.MODE === "dev" ? 3600000 : 3600);
-
-// Initial registration tests
+// checks
 const checks = _.constant([
   { field: "name", message: "Name is required" },
   { field: "email", message: "Please include a valid email" },
@@ -19,25 +17,9 @@ const checks = _.constant([
     message: "Please enter a password with 6 or more characters",
   },
 ]);
+const { getChecks } = require("../../utils/userChecks");
 
-const getFieldNameCheck = _.curry((check, info) =>
-  check(info.field, info.message).not().isEmpty()
-);
-const getFieldEmailCheck = _.curry((check, info) =>
-  check(info.field, info.message).isEmail()
-);
-const getFieldPwordCheck = _.curry((check, info) =>
-  check(info.field, info.message).isLength({ min: 6 })
-);
-
-const handleField = (check) =>
-  _.cond([
-    [_.matches({ field: "name" }), getFieldNameCheck(check)],
-    [_.matches({ field: "email" }), getFieldEmailCheck(check)],
-    [_.matches({ field: "password" }), getFieldPwordCheck(check)],
-  ]);
-
-const getChecks = (check, fields) => _.map(fields, handleField(check));
+const getExpiration = () => (process.env.MODE === "dev" ? 3600000 : 3600);
 
 // @route   GET api/users
 // @desc    Test route
