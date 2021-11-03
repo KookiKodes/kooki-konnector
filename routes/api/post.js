@@ -225,4 +225,144 @@ router.delete("/unlike/:post_id", checkToken, async (req, res) => {
   }
 });
 
+// checks
+const postCommentCheck = _.constant([
+  { field: "text", message: "Text is required", notEmpty: true },
+]);
+
+// @route   POST api/post/:post_id/comment
+// @desc    Comment on a post
+// @access  Private
+router.post(
+  "/:post_id/comment",
+  [checkToken, getChecks(check, postCommentCheck())],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      user: { id },
+      params: { post_id },
+      body: { text },
+    } = req;
+
+    try {
+      const { avatar, name } = await User.findById(id)
+        .select("-password")
+        .exec();
+
+      const post = await Post.findByIdAndUpdate(
+        post_id,
+        {
+          $push: {
+            comments: {
+              $each: [
+                {
+                  text,
+                  name,
+                  avatar,
+                  user: id,
+                },
+              ],
+              $position: 0,
+            },
+          },
+        },
+        { new: true }
+      ).exec();
+
+      if (!post) {
+        return res.status(400).json({
+          errors: [{ msg: "Cannot comment on post that doesn't exist" }],
+        });
+      }
+
+      res.json(post.comments);
+    } catch ({ message: msg }) {
+      console.error(msg);
+      res.status(500).json({ errors: [{ msg }] });
+    }
+  }
+);
+
+// @route   PUT api/post/:post_id/comment/:comment_id
+// @desc    Edit comment on a post
+// @access  Private
+router.put(
+  "/:post_id/comment/:comment_id",
+  [checkToken, getChecks(check, postCommentCheck())],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      user: { id },
+      params: { post_id, comment_id },
+      body: { text },
+    } = req;
+
+    try {
+      const post = await Post.findOneAndUpdate(
+        { _id: post_id },
+        { $set: { "comments.$[comment].text": text } },
+        {
+          new: true,
+          arrayFilters: [{ "comment._id": comment_id, "comment.user": id }],
+        }
+      ).exec();
+
+      if (!post) {
+        return res.status(400).json({ errors: [{ msg: "Post not found!" }] });
+      }
+
+      res.json(post.comments);
+    } catch (err) {
+      console.error(err.message);
+      if (err.kind === "ObjectId") {
+        return res
+          .status(400)
+          .json({ errors: [{ msg: "Comment not found!" }] });
+      }
+      return res.status(500).json({ errors: [{ msg: err.message }] });
+    }
+  }
+);
+
+// @route   DELETE api/post/:post_id/comment/:comment_id
+// @desc    Remove comment from a post
+// @access  Private
+router.delete("/:post_id/comment/:comment_id", checkToken, async (req, res) => {
+  const {
+    user: { id },
+    params: { post_id, comment_id },
+  } = req;
+
+  try {
+    const post = await Post.findOneAndUpdate(
+      { _id: post_id },
+      { $pull: { comments: { _id: comment_id, user: id } } },
+      {
+        new: true,
+        // arrayFilters: [{ "comment._id": comment_id, "comment.user": id }],
+      }
+    ).exec();
+
+    if (!post) {
+      return res.status(400).json({ errors: [{ msg: "Post not found!" }] });
+    }
+
+    res.json(post.comments);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === "ObjectId") {
+      return res.status(400).json({ errors: [{ msg: "Comment not found!" }] });
+    }
+    return res.status(500).json({ errors: [{ msg: err.message }] });
+  }
+});
+
 module.exports = router;
