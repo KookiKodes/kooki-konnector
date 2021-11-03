@@ -70,9 +70,12 @@ router.get("/:post_id", checkToken, async (req, res) => {
   try {
     const post = await Post.findById(post_id).exec();
     return res.json(post);
-  } catch ({ message: msg }) {
-    console.error(msg);
-    return res.status(500).json({ errors: [{ msg }] });
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === "ObjectId") {
+      return res.status(400).json({ errors: [{ msg: "Post not found!" }] });
+    }
+    return res.status(500).json({ errors: [{ msg: err.message }] });
   }
 });
 
@@ -85,9 +88,12 @@ router.get("/all/:user_id", checkToken, async (req, res) => {
   try {
     const posts = await Post.find({ user: user_id }).exec();
     return res.json(posts);
-  } catch ({ message: msg }) {
-    console.error(msg);
-    return res.status(500).json({ errors: [{ msg }] });
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === "ObjectId") {
+      return res.status(400).json({ errors: [{ msg: "Post not found!" }] });
+    }
+    return res.status(500).json({ errors: [{ msg: err.message }] });
   }
 });
 
@@ -121,11 +127,40 @@ router.put(
           .status(400)
           .json({ errors: [{ msg: "Could not update post" }] });
       return res.json(post);
-    } catch ({ message: msg }) {
-      console.error(msg);
-      return res.status(500).json({ errors: [{ msg }] });
+    } catch (err) {
+      console.error(err.message);
+      if (err.kind === "ObjectId") {
+        return res.status(400).json({ errors: [{ msg: "Post not found!" }] });
+      }
+      return res.status(500).json({ errors: [{ msg: err.message }] });
     }
   }
 );
+
+// @route   DELETE api/post/:post_id
+// @desc    Delete post by id
+// @access  Private
+router.delete("/:post_id", checkToken, async (req, res) => {
+  const {
+    params: { post_id },
+    user: { id },
+  } = req;
+
+  try {
+    const post = await Post.findOneAndRemove({ user: id, _id: post_id }).exec();
+    if (!post)
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "Could not delete post" }] });
+
+    return res.json(post);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === "ObjectId") {
+      return res.status(400).json({ errors: [{ msg: "Post not found!" }] });
+    }
+    return res.status(500).json({ errors: [{ msg: err.message }] });
+  }
+});
 
 module.exports = router;
