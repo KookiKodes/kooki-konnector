@@ -209,4 +209,75 @@ router.put("/experience/:exp_id", checkToken, async (req, res) => {
   }
 });
 
+// put experience checks
+const putEduChecks = _.constant([
+  { field: "school", message: "School is required", notEmpty: true },
+  { field: "degree", message: "Degree is required", notEmpty: true },
+  { field: "from", message: "From date is required", notEmpty: true },
+  {
+    field: "fieldofstudy",
+    message: "Field of study is required",
+    notEmpty: true,
+  },
+]);
+
+// @route   PUT api/profile/education
+// @desc    Add profile education
+// @access  Private
+router.put(
+  "/education",
+  [checkToken, getChecks(check, putEduChecks())],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { id } = req.user;
+
+    try {
+      const profile = await Profile.findOneAndUpdate(
+        { user: id },
+        {
+          $push: {
+            education: {
+              $each: [{ ...req.body }],
+              $position: 0,
+            },
+          },
+        },
+        { new: true }
+      ).exec();
+      if (!profile)
+        return res.status(404).json({ errors: [{ msg: "Profile not found" }] });
+
+      res.json(profile);
+    } catch ({ message: msg }) {
+      console.error(msg);
+      return res.status(500).json({ errors: [{ msg }] });
+    }
+  }
+);
+
+// @route   PUT api/profile/education/:edu_id
+// @desc    Delete profile education
+// @access  Private
+router.put("/education/:edu_id", checkToken, async (req, res) => {
+  const {
+    user: { id },
+    params: { edu_id },
+  } = req;
+  try {
+    const profile = await Profile.findOneAndUpdate(
+      { user: id },
+      { $pull: { education: { _id: edu_id } } },
+      { new: true }
+    ).exec();
+    res.json(profile);
+  } catch ({ message: msg }) {
+    console.error(msg);
+    return res.status(500).json({ errors: [{ msg }] });
+  }
+});
+
 module.exports = router;
