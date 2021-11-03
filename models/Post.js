@@ -14,10 +14,8 @@ const PostSchema = new Schema(
     avatar: String,
     likes: [
       {
-        user: {
-          type: Schema.Types.ObjectId,
-          ref: "user",
-        },
+        type: Schema.Types.ObjectId,
+        ref: "user",
       },
     ],
     comments: [

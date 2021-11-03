@@ -163,4 +163,66 @@ router.delete("/:post_id", checkToken, async (req, res) => {
   }
 });
 
+// @route   PUT api/post/like/:post_id
+// @desc    Add like to post by id
+// @access  Private
+router.put("/like/:post_id", checkToken, async (req, res) => {
+  const {
+    user: { id },
+    params: { post_id },
+  } = req;
+  try {
+    const post = await Post.findOneAndUpdate(
+      { _id: post_id },
+      {
+        $addToSet: { likes: id },
+      },
+      { new: true }
+    ).exec();
+
+    if (!post) {
+      return res.status(400).json({ errors: [{ msg: "No post found!" }] });
+    }
+
+    return res.json(post);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === "ObjectId") {
+      return res.status(400).json({ errors: [{ msg: "Post not found!" }] });
+    }
+    return res.status(500).json({ errors: [{ msg: err.message }] });
+  }
+});
+
+// @route   DELETE api/post/like/:post_id
+// @desc    Remove like from post by id
+// @access  Private
+router.delete("/like/:post_id", checkToken, async (req, res) => {
+  const {
+    user: { id },
+    params: { post_id },
+  } = req;
+  try {
+    const post = await Post.findOneAndUpdate(
+      { _id: post_id },
+      {
+        $pull: { likes: id },
+      },
+      { new: true }
+    ).exec();
+
+    if (!post) {
+      return res.status(400).json({ errors: [{ msg: "No post found!" }] });
+    }
+
+    return res.json(post);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === "ObjectId") {
+      return res.status(400).json({ errors: [{ msg: "Post not found!" }] });
+    }
+    return res.status(500).json({ errors: [{ msg: err.message }] });
+  }
+});
+
 module.exports = router;
