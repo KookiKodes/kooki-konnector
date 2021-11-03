@@ -194,10 +194,10 @@ router.put("/like/:post_id", checkToken, async (req, res) => {
   }
 });
 
-// @route   DELETE api/post/like/:post_id
-// @desc    Remove like from post by id
+// @route   DELETE api/post/unlike/:post_id
+// @desc    Unlike post by id
 // @access  Private
-router.delete("/like/:post_id", checkToken, async (req, res) => {
+router.delete("/unlike/:post_id", checkToken, async (req, res) => {
   const {
     user: { id },
     params: { post_id },
