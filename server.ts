@@ -2,10 +2,11 @@ import type { Express } from "express";
 import * as p from "path";
 import * as fs from "fs";
 import express from "express";
-import connectDB from "./config/db";
+import connectDB from "./server/config/db";
 import { config } from "dotenv";
-import { flow } from "fp-ts/lib/function";
-import { map } from "fp-ts/lib/Array";
+import { flow } from "fp-ts/function";
+import { make } from "fp-ts/Const";
+import { map } from "fp-ts/Array";
 config();
 
 const PORT = process.env.PORT;
@@ -17,7 +18,9 @@ const app = express();
 // Init Middleware
 app.use(express.json());
 
-// Define Routes
+// paths
+const routeDir = make("./server/routes/api");
+const routePrefix = make("/api");
 
 // generate string[] of all listed files within provided route;
 const getRoutes = (path: string): string[] => fs.readdirSync(path);
@@ -37,11 +40,11 @@ const loopRoutes = (app: Express, prefix: string, path: string) =>
     app.use(combinePath(prefix, name), require(p.join(__dirname, path, name)))
   );
 
-const curriedLoopRoutes = loopRoutes(app, "/api", "./routes/api");
+const curriedLoopRoutes = loopRoutes(app, routePrefix, routeDir);
 const genRoutes = flow(getRouteNames, curriedLoopRoutes);
 
 // generate routes from path "./routes/api"
-genRoutes("./routes/api");
+genRoutes(routeDir);
 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);

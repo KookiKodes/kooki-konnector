@@ -1,6 +1,6 @@
 {
-  "watch": ["src", ".", "routes", "middleware"],
-  "ext": "ts,json",
+  "watch": ["src", ".", "routes", "middleware", "types", "utils"],
+  "ext": "ts,json, js, jsx, tsx",
   "ignore": ["src/**/*.spec.ts"],
   "exec": "ts-node server.ts"
 }

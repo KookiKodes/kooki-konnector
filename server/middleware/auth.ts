@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction, RequestHandler } from "express";
+import type { Request, Response, NextFunction } from "express";
 import type { Either } from "fp-ts/Either";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { config } from "dotenv";
