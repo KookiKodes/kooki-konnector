@@ -9,7 +9,7 @@ require("dotenv").config();
 
 // check middleware
 const { check, validationResult } = require("express-validator");
-const { getChecks } = require("../../utils/userChecks");
+const { buildChecks } = require("../../utils/userChecks");
 const postProfileCheck = _.constant([
   { field: "status", message: "Status is required", notEmpty: true },
   { field: "skills", message: "Skills are required", notEmpty: true },
@@ -46,7 +46,7 @@ router.get("/me", checkToken, async (req, res) => {
 // @access  Private
 router.post(
   "/",
-  [checkToken, getChecks(check, postProfileCheck())],
+  [checkToken, buildChecks(check, postProfileCheck())],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -159,7 +159,7 @@ const putExperienceChecks = _.constant([
 // @access  Private
 router.put(
   "/experience",
-  [checkToken, getChecks(check, putExperienceChecks())],
+  [checkToken, buildChecks(check, putExperienceChecks())],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -230,7 +230,7 @@ const putEduChecks = _.constant([
 // @access  Private
 router.put(
   "/education",
-  [checkToken, getChecks(check, putEduChecks())],
+  [checkToken, buildChecks(check, putEduChecks())],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

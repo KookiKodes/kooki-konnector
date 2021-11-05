@@ -51,5 +51,5 @@ const handleResponse =
   (e: Either<Error, JwtPayload>) =>
     E.fold<Error, JwtPayload, void>(respond(res), setReq(req, next))(e);
 
-exports.checkToken = (req: Request, res: Response, next: NextFunction) =>
+export const checkToken = (req: Request, res: Response, next: NextFunction) =>
   flow(getToken, handleDecode, handleResponse(req, res, next))(req);

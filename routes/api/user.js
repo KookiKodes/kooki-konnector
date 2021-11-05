@@ -17,14 +17,14 @@ const checks = _.constant([
     minLength: true,
   },
 ]);
-const { getChecks } = require("../../utils/userChecks");
+const { buildChecks } = require("../../utils/userChecks");
 
 const getExpiration = () => (process.env.MODE === "dev" ? 3600000 : 3600);
 
 // @route   POST api/users
 // @desc    Test route
 // @access  Public
-router.post("/", getChecks(check, checks()), async (req, res) => {
+router.post("/", buildChecks(check, checks()), async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });

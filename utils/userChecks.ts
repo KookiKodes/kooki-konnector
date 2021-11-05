@@ -1,6 +1,12 @@
-const _ = require("lodash");
+import _ from "lodash";
+import type { ValidationChain } from "express-validator";
 
-const getNotEmptyCheck = _.curry((check, info) =>
+type Check = (
+  fields: string | string[] | undefined,
+  message?: any
+) => ValidationChain;
+
+const getNotEmptyCheck = _.curry((check: Check, info) =>
   check(info.field, info.message).not().isEmpty()
 );
 const getFieldEmailCheck = _.curry((check, info) =>
@@ -11,11 +17,11 @@ const getMinLengthCheck = _.curry((check, info) =>
   check(info.field, info.message).isLength({ min: 6 })
 );
 
-const handleField = (check) =>
+const handleField = (check: Check) =>
   _.cond([
     [_.matches({ notEmpty: true }), getNotEmptyCheck(check)],
     [_.matches({ isEmail: true }), getFieldEmailCheck(check)],
     [_.matches({ minLength: true }), getMinLengthCheck(check)],
   ]);
 
-exports.getChecks = (check, fields) => _.map(fields, handleField(check));
+export const buildChecks = (check, fields) => _.map(fields, handleField(check));

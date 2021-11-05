@@ -6,7 +6,7 @@ const _ = require("lodash");
 
 // check middleware
 const { check, validationResult } = require("express-validator");
-const { getChecks } = require("../../utils/userChecks");
+const { buildChecks } = require("../../utils/userChecks");
 const postPostCheck = _.constant([
   { field: "text", message: "Text is required", notEmpty: true },
 ]);
@@ -19,7 +19,7 @@ const { checkToken } = require("../../middleware/auth");
 // @access  Private
 router.post(
   "/",
-  [checkToken, getChecks(check, postPostCheck())],
+  [checkToken, buildChecks(check, postPostCheck())],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -107,7 +107,7 @@ const putPostCheck = _.constant([
 // @access  Private
 router.put(
   "/:post_id",
-  [checkToken, getChecks(check, putPostCheck())],
+  [checkToken, buildChecks(check, putPostCheck())],
   async (req, res) => {
     const {
       params: { post_id },
@@ -235,7 +235,7 @@ const postCommentCheck = _.constant([
 // @access  Private
 router.post(
   "/:post_id/comment",
-  [checkToken, getChecks(check, postCommentCheck())],
+  [checkToken, buildChecks(check, postCommentCheck())],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -292,7 +292,7 @@ router.post(
 // @access  Private
 router.put(
   "/:post_id/comment/:comment_id",
-  [checkToken, getChecks(check, postCommentCheck())],
+  [checkToken, buildChecks(check, postCommentCheck())],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
