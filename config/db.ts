@@ -2,7 +2,7 @@ import type { Mongoose } from "mongoose";
 import mongoose from "mongoose";
 import { map } from "fp-ts/Task";
 import { fold, toError } from "fp-ts/Either";
-import { tryCatch } from "fp-ts/TaskEither";
+import { tryCatch, of } from "fp-ts/TaskEither";
 import { log, error } from "fp-ts/Console";
 import { pipe, flow } from "fp-ts/function";
 import { make } from "fp-ts/Const";
